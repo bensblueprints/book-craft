@@ -1,0 +1,79 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String            @id @default(cuid())
+  name            String?
+  email           String?           @unique
+  password        String?
+  credits         Int               @default(3)
+  createdAt       DateTime          @default(now())
+  openAIKey       String?
+  openRouterKey   String?
+  updatedAt       DateTime          @updatedAt
+  books           Book[] // Relation to books
+  PurchaseHistory PurchaseHistory[] // Relation to purchase history
+}
+
+model PurchaseHistory {
+  id        String         @id @default(uuid())
+  title     String
+  credits   Int
+  price     Decimal        @db.Decimal(10, 2)
+  status    PurchaseStatus
+  userId    String
+  user      User           @relation(fields: [userId], references: [id])
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+}
+
+enum PurchaseStatus {
+  COMPLETED
+  CANCELLED
+}
+
+model Book {
+  id           String   @id @default(uuid())
+  title        String
+  shortSummary String
+  genre        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  userId    String // Foreign key to the User model (userId is a String)
+  user      User   @relation(fields: [userId], references: [id]) // Relation to User
+  apiChoice String
+
+  chapters   Chapter[] // Relation to Chapters
+  characters Character[] // Relation to Characters
+}
+
+model Chapter {
+  id        String   @id @default(uuid())
+  title     String
+  summary   String
+  pacing    String
+  wordCount Int
+  keyEvents String[]
+  scenes    String[]
+  pov       String
+  content   String?
+  position  Int      @default(0)
+  bookId    String // Foreign key to Book
+  book      Book     @relation(fields: [bookId], references: [id]) // Relation to Book
+}
+
+model Character {
+  id        String @id @default(uuid())
+  name      String
+  role      String
+  biography String
+  bookId    String
+  book      Book   @relation(fields: [bookId], references: [id]) // Relation to Book
+}
