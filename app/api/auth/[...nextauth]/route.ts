@@ -13,26 +13,46 @@ const handler = NextAuth({
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) return null;
+        try {
+          if (!credentials?.email || !credentials?.password) {
+            console.error("Missing email or password");
+            return null;
+          }
 
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email },
-        });
+          const user = await prisma.user.findUnique({
+            where: { email: credentials.email },
+          });
 
-        if (!user || !user.password) return null;
+          if (!user) {
+            console.error("User not found");
+            return null;
+          }
 
-        const isValid = await bcrypt.compare(
-          credentials.password,
-          user.password
-        );
-        if (!isValid) return null;
+          if (!user.password) {
+            console.error("User has no password");
+            return null;
+          }
 
-        return {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          credits: user.credits,
-        };
+          const isValid = await bcrypt.compare(
+            credentials.password,
+            user.password
+          );
+
+          if (!isValid) {
+            console.error("Invalid password");
+            return null;
+          }
+
+          return {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            credits: user.credits,
+          };
+        } catch (err) {
+          console.error("Authorize error:", err);
+          return null;
+        }
       },
     }),
 
@@ -44,6 +64,7 @@ const handler = NextAuth({
 
   pages: {
     signIn: "/login",
+    error: "/auth/error", // optional: redirect to a page if needed
   },
 
   session: {
@@ -63,7 +84,7 @@ const handler = NextAuth({
               data: {
                 name: user.name,
                 email: user.email!,
-                credits: 3, // Default credits or any initial value
+                credits: 3,
               },
             });
           }
@@ -71,33 +92,49 @@ const handler = NextAuth({
 
         return true;
       } catch (error) {
-        console.log("Error in signIn callback:", error);
+        console.error("signIn callback error:", error);
         return false;
       }
     },
 
     async jwt({ token, user }) {
-      if (user) {
-        const dbUser = await prisma.user.findUnique({
-          where: { email: user.email! },
-        });
+      try {
+        if (user) {
+          const dbUser = await prisma.user.findUnique({
+            where: { email: user.email! },
+          });
 
-        if (dbUser) {
-          token.id = dbUser.id;
-          token.credits = dbUser.credits ?? 0;
+          if (dbUser) {
+            token.id = dbUser.id;
+            token.credits = dbUser.credits ?? 0;
+          }
         }
-      }
 
-      return token;
+        return token;
+      } catch (error) {
+        console.error("JWT callback error:", error);
+        return token;
+      }
     },
 
     async session({ session, token }) {
-      if (token) {
-        session.user.id = token.id;
-        session.user.credits = token.credits ?? 0;
-      }
+      try {
+        if (token) {
+          session.user.id = token.id;
+          session.user.credits = token.credits ?? 0;
+        }
 
-      return session;
+        return session;
+      } catch (error) {
+        console.error("Session callback error:", error);
+        return session;
+      }
+    },
+  },
+
+  events: {
+    async error(message) {
+      console.error("NextAuth error event:", message);
     },
   },
 
