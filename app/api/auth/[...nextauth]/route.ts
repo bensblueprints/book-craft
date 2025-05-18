@@ -44,7 +44,6 @@ const handler = NextAuth({
 
   pages: {
     signIn: "/login",
-    error: "/auth/error",
   },
 
   session: {
