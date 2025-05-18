@@ -4,10 +4,8 @@ import { hash } from "bcryptjs";
 import { Hono } from "hono";
 import prisma from "../db/prisma";
 
-const app = new Hono().post(
-  "/signup",
-  zValidator("json", signupSchema),
-  async (c) => {
+const app = new Hono()
+  .post("/signup", zValidator("json", signupSchema), async (c) => {
     try {
       const { name, email, password } = c.req.valid("json");
 
@@ -61,7 +59,26 @@ const app = new Hono().post(
         500
       );
     }
-  }
-);
+  })
+  .get("/auth-check", async (c) => {
+    try {
+      return c.json({
+        status: "ok",
+        timestamp: new Date().toISOString(),
+      });
+    } catch (error) {
+      console.error("Error creating user:", error);
+      return c.json(
+        {
+          error: {
+            email: {
+              message: "Something went wrong",
+            },
+          },
+        },
+        500
+      );
+    }
+  });
 
 export default app;
