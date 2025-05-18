@@ -52,23 +52,28 @@ const handler = NextAuth({
 
   callbacks: {
     async signIn({ user, account }) {
-      if (account?.provider === "google") {
-        const existingUser = await prisma.user.findUnique({
-          where: { email: user.email! },
-        });
-
-        if (!existingUser) {
-          await prisma.user.create({
-            data: {
-              name: user.name,
-              email: user.email!,
-              credits: 3, // Default credits or any initial value
-            },
+      try {
+        if (account?.provider === "google") {
+          const existingUser = await prisma.user.findUnique({
+            where: { email: user.email! },
           });
-        }
-      }
 
-      return true;
+          if (!existingUser) {
+            await prisma.user.create({
+              data: {
+                name: user.name,
+                email: user.email!,
+                credits: 3, // Default credits or any initial value
+              },
+            });
+          }
+        }
+
+        return true;
+      } catch (error) {
+        console.log("Error in signIn callback:", error);
+        return false;
+      }
     },
 
     async jwt({ token, user }) {
