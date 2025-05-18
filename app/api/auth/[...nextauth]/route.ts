@@ -137,7 +137,7 @@ const handler = NextAuth({
       console.error("NextAuth error event:", message);
     },
   },
-
+  debug: true,
   secret: process.env.NEXTAUTH_SECRET,
 });
 
