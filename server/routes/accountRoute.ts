@@ -3,6 +3,7 @@ import { Hono } from "hono";
 import { OpenAI } from "openai";
 import { z } from "zod";
 import prisma from "../db/prisma";
+import { validateOpenRouterApiKey } from "../utils/validateApiKey";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -21,25 +22,44 @@ const app = new Hono()
       })
     ),
     async (c) => {
-      const { openAIKey, userId } = c.req.valid("json");
+      const { openAIKey, openRouterKey, userId } = c.req.valid("json");
 
       try {
-        const openai = new OpenAI({ apiKey: openAIKey });
+        if (openAIKey) {
+          const openai = new OpenAI({ apiKey: openAIKey });
 
-        // Use GPT-4 model to validate key tier
-        await openai.chat.completions.create({
-          model: "gpt-4", // Trying GPT-4 directly
-          messages: [{ role: "user", content: "Hello" }],
-          max_tokens: 1,
-        });
+          // Use GPT-4 model to validate key tier
+          await openai.chat.completions.create({
+            model: "gpt-4", // Trying GPT-4 directly
+            messages: [{ role: "user", content: "Hello" }],
+            max_tokens: 1,
+          });
 
-        // save in db
-        await prisma.user.update({
-          where: { id: userId },
-          data: { openAIKey },
-        });
+          // save in db
+          await prisma.user.update({
+            where: { id: userId },
+            data: { openAIKey },
+          });
 
-        return c.json({ valid: true });
+          return c.json({ valid: true });
+        } else if (openRouterKey) {
+          const isValid = await validateOpenRouterApiKey(openRouterKey);
+
+          // save in db
+          if (isValid) {
+            await prisma.user.update({
+              where: { id: userId },
+              data: { openRouterKey },
+            });
+
+            return c.json({ valid: true });
+          } else {
+            return c.json({
+              valid: false,
+              error: "Invalid API key",
+            });
+          }
+        }
       } catch (error: any) {
         console.log("error", error.message);
         if (error.status === 401) {

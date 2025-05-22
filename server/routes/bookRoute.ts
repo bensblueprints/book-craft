@@ -27,9 +27,14 @@ const app = new Hono()
     } = c.req.valid("json");
 
     let apiKey = "";
+    let openai;
 
     if (apiChoice === "app") {
       apiKey = process.env.OPENAI_API_KEY || "";
+
+      openai = new OpenAI({
+        apiKey,
+      });
     } else if (apiChoice === "openai") {
       const user = await prisma.user.findUnique({
         where: {
@@ -38,11 +43,24 @@ const app = new Hono()
       });
 
       apiKey = user?.openAIKey || "";
-    }
 
-    const openai = new OpenAI({
-      apiKey,
-    });
+      openai = new OpenAI({
+        apiKey,
+      });
+    } else if (apiChoice === "openrouter") {
+      const user = await prisma.user.findUnique({
+        where: {
+          id: userId,
+        },
+      });
+
+      apiKey = user?.openRouterKey || "";
+      openai = new OpenAI({
+        apiKey,
+        baseURL:
+          apiChoice === "openrouter" ? "https://openrouter.ai/api/v1" : "",
+      });
+    }
 
     const prompt = `
 You are a creative novelist AI. Based on the following user input, generate a complete book structure with detailed metadata (but without full prose content yet).
@@ -81,45 +99,25 @@ ${characters
 }
 `;
 
-    // const response = await hf.chatCompletion({
-    //   model: "Qwen/Qwen1.5-7B-Chat",
-    //   messages: [
-    //     {
-    //       role: "system",
-    //       content:
-    //         "You are a helpful assistant that generates fictional book outlines in structured JSON. Do not include full prose content.",
-    //     },
-    //     {
-    //       role: "user",
-    //       content: prompt,
-    //     },
-    //   ],
-    // });
+    const completion = openai
+      ? await openai.chat.completions.create({
+          model: "gpt-4",
+          temperature: 0.7,
+          messages: [
+            {
+              role: "system",
+              content:
+                "You are a helpful assistant that generates fictional book outlines in structured JSON. Do not include full prose content.",
+            },
+            {
+              role: "user",
+              content: prompt,
+            },
+          ],
+        })
+      : "";
 
-    // const result = response.generated_text;
-    // const jsonStart = result.indexOf("{");
-    // const jsonEnd = result.lastIndexOf("}") + 1;
-    // const jsonString = result.slice(jsonStart, jsonEnd);
-
-    // console.log("response from qwen ai", jsonString);
-
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4",
-      temperature: 0.7,
-      messages: [
-        {
-          role: "system",
-          content:
-            "You are a helpful assistant that generates fictional book outlines in structured JSON. Do not include full prose content.",
-        },
-        {
-          role: "user",
-          content: prompt,
-        },
-      ],
-    });
-
-    const content = completion.choices[0].message.content;
+    const content = completion && completion.choices[0].message.content;
 
     try {
       const parsed = JSON.parse(content || "");

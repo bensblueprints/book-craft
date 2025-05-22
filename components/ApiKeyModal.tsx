@@ -104,6 +104,11 @@ export default function ApiKeyModal({
           error: data?.error || "",
           isValid: false,
         },
+        ["openrouter"]: {
+          ...prev["openrouter"],
+          error: data?.error || "",
+          isValid: false,
+        },
       }));
     }
   }, [error, data]);
