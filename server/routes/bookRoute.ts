@@ -57,8 +57,7 @@ const app = new Hono()
       apiKey = user?.openRouterKey || "";
       openai = new OpenAI({
         apiKey,
-        baseURL:
-          apiChoice === "openrouter" ? "https://openrouter.ai/api/v1" : "",
+        baseURL: "https://openrouter.ai/api/v1",
       });
     }
 
@@ -186,6 +185,7 @@ ${characters
       });
 
       let apiKey = "";
+      let openai;
 
       if (book?.apiChoice === "openai") {
         const user = await prisma.user.findUnique({
@@ -195,13 +195,30 @@ ${characters
         });
 
         apiKey = user?.openAIKey || "";
+
+        openai = new OpenAI({
+          apiKey,
+        });
+      } else if (book?.apiChoice === "openrouter") {
+        const user = await prisma.user.findUnique({
+          where: {
+            id: book?.userId,
+          },
+        });
+
+        apiKey = user?.openRouterKey || "";
+
+        openai = new OpenAI({
+          apiKey,
+          baseURL: "https://openrouter.ai/api/v1",
+        });
       } else {
         apiKey = process.env.OPENAI_API_KEY || "";
-      }
 
-      const openai = new OpenAI({
-        apiKey,
-      });
+        openai = new OpenAI({
+          apiKey,
+        });
+      }
 
       const prompt = `
 You are a novelist AI. Write the full chapter content using the metadata below. Include engaging prose, paragraphs, descriptions, and dialogue. Do not add summaries or structure info.

@@ -28,6 +28,7 @@ export interface Character {
   traits: string[];
   motivation: string;
   arc: string;
+  biography?: string;
 }
 
 export interface Setting {

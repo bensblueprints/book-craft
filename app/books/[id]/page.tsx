@@ -10,6 +10,7 @@ import Button from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/components/ui/use-toast";
+import { Character } from "@/types";
 import { useQueryClient } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -564,31 +565,32 @@ export default function PlotDetailPage({
                   transition={{ duration: 0.3 }}
                   className="grid grid-cols-1 md:grid-cols-2 gap-6"
                 >
-                  {bookData?.characters.map((character, index) => (
-                    <motion.div
-                      key={character.id}
-                      className="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden border border-gray-200 dark:border-gray-700"
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.3, delay: index * 0.1 }}
-                    >
-                      <div className="p-6">
-                        <h3 className="text-lg font-serif font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                          {character.name}
-                        </h3>
-                        <div className="text-xs font-medium text-indigo-600 dark:text-indigo-400 uppercase mb-2">
-                          {character.role}
-                        </div>
-                        <p className="text-gray-700 dark:text-gray-300 mb-4">
-                          {character?.biography}
-                        </p>
+                  {bookData?.characters.map(
+                    (character: Character, index: number) => (
+                      <motion.div
+                        key={character.id}
+                        className="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden border border-gray-200 dark:border-gray-700"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3, delay: index * 0.1 }}
+                      >
+                        <div className="p-6">
+                          <h3 className="text-lg font-serif font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                            {character.name}
+                          </h3>
+                          <div className="text-xs font-medium text-indigo-600 dark:text-indigo-400 uppercase mb-2">
+                            {character.role}
+                          </div>
+                          <p className="text-gray-700 dark:text-gray-300 mb-4">
+                            {character?.biography}
+                          </p>
 
-                        <div className="space-y-4">
-                          <div>
-                            <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-2">
-                              Traits
-                            </h4>
-                            {/* <div className="flex flex-wrap gap-1 mt-1">
+                          <div className="space-y-4">
+                            <div>
+                              <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-2">
+                                Traits
+                              </h4>
+                              {/* <div className="flex flex-wrap gap-1 mt-1">
                               {character.traits?.map((trait, i) => (
                                 <span
                                   key={i}
@@ -598,9 +600,9 @@ export default function PlotDetailPage({
                                 </span>
                               ))}
                             </div> */}
-                          </div>
+                            </div>
 
-                          {/* <div>
+                            {/* <div>
                             <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-2">
                               Motivation
                             </h4>
@@ -609,7 +611,7 @@ export default function PlotDetailPage({
                             </p>
                           </div> */}
 
-                          {/* <div>
+                            {/* <div>
                             <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-2">
                               Character Arc
                             </h4>
@@ -617,10 +619,11 @@ export default function PlotDetailPage({
                               {character.arc}
                             </p>
                           </div> */}
+                          </div>
                         </div>
-                      </div>
-                    </motion.div>
-                  ))}
+                      </motion.div>
+                    )
+                  )}
                 </motion.div>
               </AnimatePresence>
             </TabsContent>
