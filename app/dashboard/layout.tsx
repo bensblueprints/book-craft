@@ -47,7 +47,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               <div className="flex items-center space-x-4 mb-6">
                 <div className="w-12 h-12 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
                   <span className="text-xl font-semibold text-indigo-600 dark:text-indigo-400">
-                    {user?.name?.[0].toUpperCase()}
+                    {user?.name && user?.name?.[0].toUpperCase()}
                   </span>
                 </div>
                 <div>
