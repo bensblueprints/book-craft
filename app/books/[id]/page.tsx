@@ -5,6 +5,7 @@ import {
   useGenerateBookChapter,
   useGetBook,
 } from "@/api/useBook";
+import { LoadingDots } from "@/components/Loading";
 import Button from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Toaster } from "@/components/ui/toaster";
@@ -497,23 +498,7 @@ export default function PlotDetailPage({
                           <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                             {chapterContentLoading ? (
                               <div className="space-y-4">
-                                <div className="animate-pulse flex justify-center">
-                                  <div className="h-2.5 w-24 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
-                                </div>
-                                <p className="text-indigo-600 dark:text-indigo-400 font-medium">
-                                  {"Crafting your chapter..."}
-                                </p>
-                                <div className="w-full max-w-md mx-auto bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 mb-4">
-                                  <motion.div
-                                    className="bg-indigo-600 dark:bg-indigo-500 h-1.5 rounded-full"
-                                    initial={{ width: "0%" }}
-                                    animate={{ width: "100%" }}
-                                    transition={{
-                                      duration: 2,
-                                      repeat: Number.POSITIVE_INFINITY,
-                                    }}
-                                  ></motion.div>
-                                </div>
+                                <LoadingDots />
                               </div>
                             ) : (
                               'Click "Generate Content" to create this chapter'
