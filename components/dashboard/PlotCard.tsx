@@ -84,13 +84,13 @@ export default function PlotCard({ plot }: PlotCardProps) {
             whileTap={{ scale: 0.95 }}
             className="flex-1"
           >
-            <Button
+            {/* <Button
               variant="primary"
               fullWidth
               onClick={() => router.push(`/books/${plot.id}/edit`)}
             >
               Edit
-            </Button>
+            </Button> */}
           </motion.div>
         </div>
       </div>
