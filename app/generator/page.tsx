@@ -134,33 +134,7 @@ const steps = [
 ];
 
 export default function GeneratorPage() {
-  const { data: sessionData, status } = useSession();
-  const { user } = sessionData || {};
   const router = useRouter();
-
-  if (status === "loading") {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        Loading...
-      </div>
-    );
-  }
-
-  if (status === "unauthenticated") {
-    return router.push("/login");
-  }
-
-  // check api configuration
-  const { data: configurationData, refetch } = useCheckApiConfiguration(
-    user?.id || ""
-  );
-  const { openAIKey, openRouterKey } = configurationData || {};
-
-  useEffect(() => {
-    if (user?.id) {
-      refetch();
-    }
-  }, [refetch, user]);
 
   // State for form fields
   const [title, setTitle] = useState("");
@@ -186,6 +160,28 @@ export default function GeneratorPage() {
 
   const formRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+
+  const { data: sessionData, status } = useSession({
+    required: true,
+    onUnauthenticated() {
+      // Handle unauthenticated state more gracefully
+      return <div>Redirecting to login...</div>;
+    },
+  });
+
+  const { user } = sessionData || {};
+
+  // check api configuration
+  const { data: configurationData, refetch } = useCheckApiConfiguration(
+    user?.id || ""
+  );
+  const { openAIKey, openRouterKey } = configurationData || {};
+
+  useEffect(() => {
+    if (user?.id) {
+      refetch();
+    }
+  }, [refetch, user]);
 
   // generate book api
   const { data, mutate, isPending } = useGenerateBook();
@@ -400,6 +396,15 @@ export default function GeneratorPage() {
 
   if (isPending || redirecting) {
     return <LoadingBookGenerator title={title} />;
+  }
+
+  // Add loading state that matches server render
+  if (status === "loading") {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <div className="animate-pulse">Loading session...</div>
+      </div>
+    );
   }
 
   return (
